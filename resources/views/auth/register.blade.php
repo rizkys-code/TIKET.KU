@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Login - Tiket.Ku</title>
+    <title>Register - Tiket.Ku</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -38,23 +38,26 @@
                 <span class="mb-3 text-4xl font-bold text-tiket-purple">Tiket<span class="text-[#FFAF00]">.</span><span
                         class="text-black">Ku</span></span>
                 <span class="font-light text-gray-500 mb-8">
-                    Selamat datang kembali! Silakan masuk ke akun Anda.
+                    Buat akun baru untuk memulai petualangan Anda.
                 </span>
 
-                @if (session('error'))
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4"
-                        role="alert">
-                        <span class="block sm:inline">{{ session('error') }}</span>
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('login') }}">
+                <form method="POST" action="{{ route('register') }}">
                     @csrf
+                    <div class="py-4">
+                        <label for="name" class="mb-2 text-md font-medium text-gray-700">Nama Lengkap</label>
+                        <input type="text" name="name" id="name"
+                            class="w-full p-2 border border-gray-300 rounded-md placeholder:font-light placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-tiket-blue @error('name') border-red-500 @enderror"
+                            value="{{ old('name') }}" required autofocus>
+                        @error('name')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <div class="py-4">
                         <label for="email" class="mb-2 text-md font-medium text-gray-700">Alamat Email</label>
                         <input type="email" name="email" id="email"
                             class="w-full p-2 border border-gray-300 rounded-md placeholder:font-light placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-tiket-blue @error('email') border-red-500 @enderror"
-                            value="{{ old('email') }}" required autofocus>
+                            value="{{ old('email') }}" required>
                         @error('email')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -70,22 +73,23 @@
                         @enderror
                     </div>
 
-                    <div class="flex justify-between w-full py-4">
-                        <div class="mr-24">
-                            <input type="checkbox" name="remember" id="remember" class="mr-2">
-                            <label for="remember" class="text-md">Ingat Saya</label>
-                        </div>
-                        <a href="#" class="font-bold text-sm text-tiket-blue hover:underline">Lupa Password?</a>
+                    <div class="py-4">
+                        <label for="password_confirmation" class="mb-2 text-md font-medium text-gray-700">Konfirmasi
+                            Password</label>
+                        <input type="password" name="password_confirmation" id="password_confirmation"
+                            class="w-full p-2 border border-gray-300 rounded-md placeholder:font-light placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-tiket-blue"
+                            required>
                     </div>
 
                     <button type="submit"
-                        class="w-full bg-tiket-blue text-white p-2 rounded-lg mb-6 hover:bg-tiket-blue-darker focus:outline-none focus:ring-4 focus:ring-blue-300 font-semibold">
-                        Login
+                        class="w-full bg-tiket-blue text-white p-2 rounded-lg my-6 hover:bg-tiket-blue-darker focus:outline-none focus:ring-4 focus:ring-blue-300 font-semibold">
+                        Daftar
                     </button>
 
                     <div class="text-center text-gray-500">
-                        Belum punya akun?
-                        <a href="{{ route('register') }}" class="font-bold text-tiket-blue hover:underline">Daftar sekarang</a>
+                        Sudah punya akun?
+                        <a href="{{ route('login') }}" class="font-bold text-tiket-blue hover:underline">Login
+                            sekarang</a>
                     </div>
                 </form>
             </div>
