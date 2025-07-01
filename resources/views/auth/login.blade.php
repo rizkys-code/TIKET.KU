@@ -10,7 +10,10 @@
             theme: {
                 extend: {
                     colors: {
-                        'tiket-purple': '#A238EB',
+                       'tiket-purple': '#8A2BE2', 
+                        'tiket-yellow': '#FFAF00',
+                        'tiket-blue': '#3b82f6',
+                        'tiket-blue-darker': '#2563eb',
                     }
                 }
             }

@@ -26,7 +26,8 @@
                         </form>
                     </li>
                 @endguest
-            </ul>
+</ul>
+
         </div>
     </nav>
     <main class="container">
