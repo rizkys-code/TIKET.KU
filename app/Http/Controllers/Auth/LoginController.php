@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -16,16 +17,16 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        
+
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
-    ]);
+        ]);
 
-        if (User::attempt($credentials)) {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/');
+            return redirect()->intended('/jadwal');
         }
 
         return back()->withErrors([
@@ -35,12 +36,12 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        User::logout();
+        Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/auth/login'); // Redirect ke login
+        return redirect('/auth/login');
     }
-    
+
 }
