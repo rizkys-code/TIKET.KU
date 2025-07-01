@@ -91,7 +91,7 @@
             </div>
 
             <div class="relative hidden md:block">
-                <img src="https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80"
+                <img src="https://images.unsplash.com/photo-1517868163143-6eb6c78dbf54?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="img" class="w-[400px] h-full hidden rounded-r-2xl md:block object-cover">
             </div>
         </div>
