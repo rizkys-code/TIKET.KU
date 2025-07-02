@@ -8,7 +8,15 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('detail_pemesanan', function (Blueprint $table) {
             $table->id('id_detail');
-            $table->foreignId('id_pemesanan')->constrained('pemesanan')->onDelete('cascade');
+            // $table->foreignId('id_pemesanan')->constrained('pemesanan')->onDelete('cascade');
+
+            $table->unsignedBigInteger('id_pemesanan');
+            $table->foreign('id_pemesanan')
+            ->references('id_pemesanan')
+            ->on('pemesanan')
+            ->onDelete('cascade');
+
+            
             $table->integer('jumlah');
             $table->decimal('subtotal', 12, 2);
             $table->timestamps();
