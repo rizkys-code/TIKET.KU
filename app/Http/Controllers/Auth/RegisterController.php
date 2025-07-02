@@ -30,6 +30,6 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('home')->with('success', 'Registration successful!');
+        return redirect()->route('jadwal')->with('success', 'Registration successful!');
     }
 }
