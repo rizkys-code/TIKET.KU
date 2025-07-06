@@ -19,12 +19,13 @@ class KelasPenerbangan extends Model
 
     public function penerbangan()
     {
+        
         return $this->belongsTo(Penerbangan::class, 'penerbangan_id');
     }
 
     public function pemesanan()
     {
-        return $this->hasMany(Pemesanan::class, 'id_kelas');
+        
+        return $this->hasMany(Pemesanan::class, 'kelas_penerbangan_id');
     }
 }
-

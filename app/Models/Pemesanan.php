@@ -3,16 +3,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Pemesanan extends Model
 {
     use HasFactory;
 
     protected $table = 'pemesanan';
-    protected $primaryKey = 'id_pemesanan';
+    
+
     protected $fillable = [
-        'id_kelas',
-        'id_user',
+        'kelas_penerbangan_id',
+        'user_id',
         'waktu_pemesanan',
         'status',
         'total_harga',
@@ -22,23 +24,27 @@ class Pemesanan extends Model
         'jenis_kelamin'
     ];
 
-    public function kelas()
+    public function kelasPenerbangan()
     {
-        return $this->belongsTo(KelasPenerbangan::class, 'id_kelas');
+
+        return $this->belongsTo(KelasPenerbangan::class, 'kelas_penerbangan_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user');
+
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function pembayaran()
     {
-        return $this->hasOne(Pembayaran::class, 'id_pemesanan');
+
+        return $this->hasOne(Pembayaran::class, 'pemesanan_id');
     }
 
-    public function detail()
+    public function detailPemesanan()
     {
-        return $this->hasOne(DetailPemesanan::class, 'id_pemesanan');
+
+        return $this->hasOne(DetailPemesanan::class, 'pemesanan_id');
     }
 }

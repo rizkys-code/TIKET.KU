@@ -10,11 +10,10 @@ class DetailPemesanan extends Model
     use HasFactory;
 
     protected $table = 'detail_pemesanan';
-    protected $primaryKey = 'id_detail';
-    protected $fillable = ['id_pemesanan', 'jumlah', 'subtotal'];
+    protected $fillable = ['pemesanan_id', 'jumlah', 'subtotal'];
 
     public function pemesanan()
     {
-        return $this->belongsTo(Pemesanan::class, 'id_pemesanan');
+        return $this->belongsTo(Pemesanan::class, 'pemesanan_id');
     }
 }

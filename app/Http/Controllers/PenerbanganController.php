@@ -23,6 +23,8 @@ class PenerbanganController extends Controller
             ],
         ];
 
+        // dd($flights->pluck('maskapai.nama_maskapai'), $flights->pluck('bandaraAsal.nama_bandara'), $flights->pluck('bandaraTujuan.nama_bandara'));
+
         return view('penerbangan.jadwal', compact('flights', 'search'));
     }
 }

@@ -10,25 +10,31 @@ class Penerbangan extends Model
     use HasFactory;
 
     protected $table = 'penerbangan';
-    protected $primaryKey = 'id_penerbangan';
+
+
+
 
     public function maskapai()
     {
-        return $this->belongsTo(Maskapai::class, 'id_maskapai');
+
+        return $this->belongsTo(Maskapai::class, 'maskapai_id');
     }
 
     public function bandaraAsal()
     {
-        return $this->belongsTo(Bandara::class, 'id_bandara_asal');
+
+        return $this->belongsTo(Bandara::class, 'bandara_asal_id');
     }
 
     public function bandaraTujuan()
     {
-        return $this->belongsTo(Bandara::class, 'id_bandara_tujuan');
+
+        return $this->belongsTo(Bandara::class, 'bandara_tujuan_id');
     }
 
     public function kelas()
     {
+
         return $this->hasMany(KelasPenerbangan::class, 'penerbangan_id');
     }
 }

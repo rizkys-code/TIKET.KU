@@ -10,11 +10,13 @@ class Maskapai extends Model
     use HasFactory;
 
     protected $table = 'maskapai';
-    protected $primaryKey = 'id_maskapai';
+    
+
     protected $fillable = ['nama_maskapai'];
 
     public function penerbangan()
     {
-        return $this->hasMany(Penerbangan::class, 'id_maskapai');
+
+        return $this->hasMany(Penerbangan::class, 'maskapai_id');
     }
 }

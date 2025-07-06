@@ -10,16 +10,19 @@ class Bandara extends Model
     use HasFactory;
 
     protected $table = 'bandara';
-    protected $primaryKey = 'id_bandara';
+    
+    
     protected $fillable = ['kode_bandara', 'nama_bandara', 'kota', 'negara'];
 
     public function penerbanganAsal()
     {
-        return $this->hasMany(Penerbangan::class, 'id_bandara_asal');
+        
+        return $this->hasMany(Penerbangan::class, 'bandara_asal_id');
     }
 
     public function penerbanganTujuan()
     {
-        return $this->hasMany(Penerbangan::class, 'id_bandara_tujuan');
+        
+        return $this->hasMany(Penerbangan::class, 'bandara_tujuan_id');
     }
 }

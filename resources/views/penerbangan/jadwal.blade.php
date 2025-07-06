@@ -21,9 +21,10 @@
             </div>
         </header>
 
+        {{-- Search Bar --}}
         <div class="bg-white p-2 rounded-xl shadow-lg flex items-center text-sm text-gray-700 mb-6">
             <div class="flex-grow flex items-center divide-x divide-gray-200">
-
+                {{-- Icon --}}
                 <div class="flex items-center px-4">
                     <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
@@ -32,6 +33,7 @@
                     </svg>
                 </div>
 
+                {{-- From & To --}}
                 <div class="w-4/12 flex items-center px-4 py-1">
                     <div class="flex-1 text-right">
                         <span x-text="from" class="font-semibold whitespace-nowrap"></span>
@@ -51,6 +53,7 @@
                     </div>
                 </div>
 
+                {{-- Date Picker --}}
                 <div class="w-5/12 flex items-center justify-start px-4 py-1">
                     <div class="relative w-full">
                         <input type="text" id="datepicker"
@@ -59,6 +62,7 @@
                     </div>
                 </div>
 
+                {{-- Passenger & Class Picker --}}
                 <div class="w-3/12 flex items-center justify-start px-4 py-1">
                     <div class="relative" @click.away="passengerPickerOpen = false">
                         <button @click="passengerPickerOpen = !passengerPickerOpen"
@@ -67,7 +71,8 @@
                                 x-text="`${passengers.adult + passengers.child + passengers.infant} Penumpang, ${passengerClass}`"></span>
                         </button>
                         <div x-show="passengerPickerOpen" x-transition
-                            class="absolute top-full mt-2 w-72 bg-white rounded-xl shadow-lg p-4 z-10" style="display: none;">
+                            class="absolute top-full mt-2 w-72 bg-white rounded-xl shadow-lg p-4 z-10"
+                            style="display: none;">
                             <div class="space-y-3">
                                 <div class="flex justify-between items-center">
                                     <div>
@@ -109,6 +114,7 @@
                 </div>
             </div>
 
+            {{-- Search Button --}}
             <div class="pl-4 pr-3">
                 <button
                     class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-10 rounded-lg transition-colors">
@@ -117,9 +123,9 @@
             </div>
         </div>
 
+        {{-- Airline Filter Dropdown --}}
         <div class="flex justify-center mb-8">
-            <div @click.away="airlineDropdownOpen = false" class="relative">
-                <!-- Dropdown toggle button -->
+            <div x-data="{ airlineDropdownOpen: false }" @click.away="airlineDropdownOpen = false" class="relative">
                 <button @click="airlineDropdownOpen = !airlineDropdownOpen"
                     class="bg-white border border-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full shadow-md flex items-center space-x-2 hover:bg-gray-50 transition-colors">
                     <svg class="w-5 h-5 -rotate-45" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
@@ -128,27 +134,29 @@
                             d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
                     </svg>
                     <span>Maskapai</span>
-                    <svg class="w-5 h-5 ml-1 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': airlineDropdownOpen }"
-                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <svg class="w-5 h-5 ml-1 text-gray-500 transition-transform duration-200"
+                        :class="{ 'rotate-180': airlineDropdownOpen }" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd"
                             d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
                             clip-rule="evenodd" />
                     </svg>
                 </button>
 
-                <!-- Dropdown menu -->
                 <div x-show="airlineDropdownOpen" x-transition
-                    class="absolute z-10 mt-2 w-60 left-0 right-0 mx-auto bg-white rounded-xl shadow-lg"
+                    class="absolute z-10 mt-2 w-60 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg"
                     style="display: none;">
                     <div class="p-2 space-y-1">
                         @php
-                            // Sebaiknya, proses untuk mendapatkan daftar maskapai unik ini dilakukan di Controller.
                             $airlines = $flights->pluck('maskapai')->unique('id');
                         @endphp
                         @foreach ($airlines as $airline)
                             <a href="#" @click.prevent="airlineDropdownOpen = false"
                                 class="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
-                                <img src="{{ asset('storage/logo-maskapai/' . Str::slug($airline->nama_maskapai) . '.png') }}"
+                                @php
+                                    $firstWord = strtolower(strtok($airline->nama_maskapai, ' '));
+                                @endphp
+                                <img src="{{ asset('storage/logo-maskapai/' . $firstWord . '.png') }}"
                                     alt="{{ $airline->nama_maskapai }} Logo" class="h-6 object-contain">
                                 <span class="font-medium">{{ $airline->nama_maskapai }}</span>
                             </a>
@@ -158,42 +166,49 @@
             </div>
         </div>
 
+        {{-- Flight List --}}
         <div class="space-y-4">
             @foreach ($flights as $flight)
                 <div
                     class="bg-white p-5 rounded-xl shadow-md flex items-center justify-between transition hover:shadow-lg hover:-translate-y-1">
+                    {{-- Airline Info --}}
                     <div class="flex items-center space-x-6 w-1/3">
                         <img src="{{ asset('storage/logo-maskapai/' . Str::slug($flight->maskapai->nama_maskapai) . '.png') }}"
                             alt="{{ $flight->maskapai->nama_maskapai }} Logo" class="h-8 object-contain">
-                        <span class="font-semibold text-gray-900 text-base">{{ $flight->maskapai->nama_maskapai }}</span>
+                        <span class="font-semibold text-gray-900 text-base">
+                            {{ $flight->maskapai->nama_maskapai }}
+                        </span>
                     </div>
 
+                    {{-- Flight Time & Route --}}
                     <div class="flex items-center justify-center space-x-8 flex-grow">
                         <div class="text-center">
-                            <p class="text-xl font-bold text-gray-900">{{ $flight->waktu_berangkat }}</p>
+                            <p class="text-xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($flight->waktu_berangkat)->format('H:i') }}</p>
                             <p class="text-sm text-gray-500">{{ $flight->bandaraAsal->kode_bandara }}</p>
                         </div>
                         <div class="text-center text-gray-400">
+                            {{-- Arrow Icon --}}
                             <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                             </svg>
                         </div>
                         <div class="text-center">
-                            <p class="text-xl font-bold text-gray-900">{{ $flight->waktu_tiba }}</p>
+                            <p class="text-xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($flight->waktu_tiba)->format('H:i') }}</p>
                             <p class="text-sm text-gray-500">{{ $flight->bandaraTujuan->kode_bandara }}</p>
                         </div>
                     </div>
 
+                    {{-- Price --}}
                     <div class="text-right w-1/3">
                         @php
-                            $harga = $flight->kelas->firstWhere('jenis_kelas', 'Ekonomi')?->harga ?? 0;
+                            $requestedClass = $search['passengerClass'];
+                            $harga = $flight->kelas->firstWhere('jenis_kelas', $requestedClass)?->harga ?? 0;
                         @endphp
                         <p class="text-xl font-bold text-gray-900">IDR {{ number_format($harga, 0, ',', '.') }}</p>
                     </div>
                 </div>
             @endforeach
-
         </div>
     </div>
 @endsection
@@ -202,14 +217,15 @@
     <script>
         function flightSearch() {
             return {
+                // Search State
                 from: @json($search['from']),
                 to: @json($search['to']),
                 dateText: @json($search['dateText']),
                 passengerClass: @json($search['passengerClass']),
-                passengerPickerOpen: false,
                 passengers: @json($search['passengers']),
 
-                // State untuk dropdown maskapai
+                // UI State
+                passengerPickerOpen: false,
                 airlineDropdownOpen: false,
 
                 switchCities() {
@@ -217,6 +233,7 @@
                 },
 
                 init() {
+                    // Litepicker Initialization
                     const picker = new Litepicker({
                         element: document.getElementById('datepicker'),
                         singleMode: false,
@@ -242,10 +259,10 @@
                                     year: '2-digit'
                                 };
 
-                                const formattedDate1 = new Intl.DateTimeFormat('id-ID', options).format(
-                                    date1.dateInstance).replace(/\./g, '');
-                                const formattedDate2 = new Intl.DateTimeFormat('id-ID', options).format(
-                                    date2.dateInstance).replace(/\./g, '');
+                                const formattedDate1 = new Intl.DateTimeFormat('id-ID', options)
+                                    .format(date1.dateInstance).replace(/\./g, '');
+                                const formattedDate2 = new Intl.DateTimeFormat('id-ID', options)
+                                    .format(date2.dateInstance).replace(/\./g, '');
 
                                 this.dateText = `${formattedDate1} - ${formattedDate2} (Pulang Pergi)`;
                             });
