@@ -118,14 +118,44 @@
         </div>
 
         <div class="flex justify-center mb-8">
-            <button
-                class="bg-white border border-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full shadow-md flex items-center space-x-2 hover:bg-gray-50">
-                <svg class="w-5 h-5 -rotate-45" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path
-                        d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                </svg>
-                <span>Maskapai</span>
-            </button>
+            <div x-data="{ open: false }" @click.away="open = false" class="relative">
+                <!-- Dropdown toggle button -->
+                <button @click="open = !open"
+                    class="bg-white border border-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full shadow-md flex items-center space-x-2 hover:bg-gray-50 transition-colors">
+                    <svg class="w-5 h-5 -rotate-45" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path
+                            d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                    </svg>
+                    <span>Maskapai</span>
+                    <svg class="w-5 h-5 ml-1 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': open }"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
+
+                <!-- Dropdown menu -->
+                <div x-show="open" x-transition
+                    class="absolute z-10 mt-2 w-60 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg"
+                    style="display: none;">
+                    <div class="p-2 space-y-1">
+                        @php
+                            // Create a unique list of airlines. This should ideally be done in the controller.
+                            $airlines = $flights->pluck('maskapai')->unique('id');
+                        @endphp
+                        @foreach ($airlines as $airline)
+                            <a href="#"
+                                class="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
+                                <img src="{{ asset('storage/logo-maskapai/' . Str::slug($airline->nama_maskapai) . '.png') }}"
+                                    alt="{{ $airline->nama_maskapai }} Logo" class="h-6 object-contain">
+                                <span class="font-medium">{{ $airline->nama_maskapai }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="space-y-4">

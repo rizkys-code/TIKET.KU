@@ -31,7 +31,7 @@
 </head>
 
 <body class="bg-gray-50">
-
+    
     <div class="flex items-center justify-center min-h-screen">
         <div class="relative flex flex-col m-6 space-y-8 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0">
             <div class="flex flex-col justify-center p-8 md:p-14">

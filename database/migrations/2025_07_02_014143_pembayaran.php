@@ -10,7 +10,7 @@ return new class extends Migration {
             $table->id('id_pembayaran');
             // $table->foreignId('id_pemesanan')->constrained('pemesanan')->onDelete('cascade');
 
-             $table->unsignedBigInteger('id_pemesanan');
+            $table->unsignedBigInteger('id_pemesanan');
             $table->foreign('id_pemesanan')
             ->references('id_pemesanan')
             ->on('pemesanan')
