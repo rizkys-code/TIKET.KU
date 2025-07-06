@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\JadwalController;
+use App\Http\Controllers\PenerbanganController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -23,6 +24,6 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('jadwal', [JadwalController::class, 'index'])->name('jadwal');
+    Route::get('/jadwal', [PenerbanganController::class, 'index'])->name('jadwal');
 
 });
