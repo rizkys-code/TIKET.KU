@@ -125,7 +125,7 @@
 
         {{-- Airline Filter Dropdown --}}
         <div class="flex justify-center mb-8">
-            <div x-data="{ airlineDropdownOpen: false }" @click.away="airlineDropdownOpen = false" class="relative">
+            <div @click.away="airlineDropdownOpen = false" class="relative">
                 <button @click="airlineDropdownOpen = !airlineDropdownOpen"
                     class="bg-white border border-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full shadow-md flex items-center space-x-2 hover:bg-gray-50 transition-colors">
                     <svg class="w-5 h-5 -rotate-45" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
@@ -144,19 +144,16 @@
                 </button>
 
                 <div x-show="airlineDropdownOpen" x-transition
-                    class="absolute z-10 mt-2 w-60 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg"
+                    class="absolute z-10 mt-2 w-60 left-0 right-0 mx-auto bg-white rounded-xl shadow-lg"
                     style="display: none;">
                     <div class="p-2 space-y-1">
                         @php
-                            $airlines = $flights->pluck('maskapai')->unique('id');
+                            $airlines = $flights->pluck('maskapai')->filter()->unique('id');
                         @endphp
                         @foreach ($airlines as $airline)
                             <a href="#" @click.prevent="airlineDropdownOpen = false"
                                 class="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
-                                @php
-                                    $firstWord = strtolower(strtok($airline->nama_maskapai, ' '));
-                                @endphp
-                                <img src="{{ asset('storage/logo-maskapai/' . $firstWord . '.png') }}"
+                                <img src="{{ asset('storage/logo-maskapai/' . Str::slug($airline->nama_maskapai) . '.png') }}"
                                     alt="{{ $airline->nama_maskapai }} Logo" class="h-6 object-contain">
                                 <span class="font-medium">{{ $airline->nama_maskapai }}</span>
                             </a>
@@ -173,21 +170,25 @@
                     class="bg-white p-5 rounded-xl shadow-md flex items-center justify-between transition hover:shadow-lg hover:-translate-y-1">
                     {{-- Airline Info --}}
                     <div class="flex items-center space-x-6 w-1/3">
-                        <img src="{{ asset('storage/logo-maskapai/' . Str::slug($flight->maskapai->nama_maskapai) . '.png') }}"
-                            alt="{{ $flight->maskapai->nama_maskapai }} Logo" class="h-8 object-contain">
-                        <span class="font-semibold text-gray-900 text-base">
-                            {{ $flight->maskapai->nama_maskapai }}
-                        </span>
+                        @if ($flight->maskapai)
+                            <img src="{{ asset('storage/logo-maskapai/' . Str::slug($flight->maskapai->nama_maskapai) . '.png') }}"
+                                alt="{{ $flight->maskapai->nama_maskapai }} Logo" class="h-8 object-contain">
+                            <span class="font-semibold text-gray-900 text-base">
+                                {{ $flight->maskapai->nama_maskapai }}
+                            </span>
+                        @else
+                            <div class="h-8 w-8 bg-gray-200 rounded-full"></div>
+                            <span class="font-semibold text-gray-500">Maskapai tidak diketahui</span>
+                        @endif
                     </div>
 
                     {{-- Flight Time & Route --}}
                     <div class="flex items-center justify-center space-x-8 flex-grow">
                         <div class="text-center">
                             <p class="text-xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($flight->waktu_berangkat)->format('H:i') }}</p>
-                            <p class="text-sm text-gray-500">{{ $flight->bandaraAsal->kode_bandara }}</p>
+                            <p class="text-sm text-gray-500">{{ $flight->bandaraAsal?->kode_bandara ?? 'N/A' }}</p>
                         </div>
                         <div class="text-center text-gray-400">
-                            {{-- Arrow Icon --}}
                             <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -195,14 +196,14 @@
                         </div>
                         <div class="text-center">
                             <p class="text-xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($flight->waktu_tiba)->format('H:i') }}</p>
-                            <p class="text-sm text-gray-500">{{ $flight->bandaraTujuan->kode_bandara }}</p>
+                            <p class="text-sm text-gray-500">{{ $flight->bandaraTujuan?->kode_bandara ?? 'N/A' }}</p>
                         </div>
                     </div>
 
                     {{-- Price --}}
                     <div class="text-right w-1/3">
                         @php
-                            $requestedClass = $search['passengerClass'];
+                            $requestedClass = $search['passengerClass'] ?? 'Ekonomi';
                             $harga = $flight->kelas->firstWhere('jenis_kelas', $requestedClass)?->harga ?? 0;
                         @endphp
                         <p class="text-xl font-bold text-gray-900">IDR {{ number_format($harga, 0, ',', '.') }}</p>
@@ -214,6 +215,7 @@
 @endsection
 
 @push('scripts')
+    {{-- Script tetap sama, tidak perlu diubah --}}
     <script>
         function flightSearch() {
             return {
@@ -221,7 +223,7 @@
                 from: @json($search['from']),
                 to: @json($search['to']),
                 dateText: @json($search['dateText']),
-                passengerClass: @json($search['passengerClass']),
+                passengerClass: @json($search['passengerClass'] ?? 'Ekonomi'),
                 passengers: @json($search['passengers']),
 
                 // UI State
