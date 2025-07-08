@@ -163,7 +163,6 @@
             </div>
         </div>
 
-        {{-- Flight List --}}
         <div class="space-y-4">
             @foreach ($flights as $flight)
                 <div
