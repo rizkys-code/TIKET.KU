@@ -11,8 +11,8 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('kelas_penerbangan_id')->constrained('kelas_penerbangan')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->datetime('waktu_pemesanan'); // Diubah ke datetime
-            $table->string('status', 20);
+            $table->datetime('waktu_pemesanan');
+            $table->boolean('status')->default(false)->comment('false: belum dibayar, true: sudah dibayar');
             $table->decimal('total_harga', 12, 2);
             $table->string('nama_penumpang', 100);
             $table->string('nomor_identitas', 100);

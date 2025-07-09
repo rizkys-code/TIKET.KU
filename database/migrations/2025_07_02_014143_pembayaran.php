@@ -10,7 +10,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('pemesanan_id')->constrained('pemesanan')->onDelete('cascade');
             $table->string('metode', 255);
-            $table->string('status_pembayaran', 20);
+            $table->boolean('status_pembayaran')->default(false)->comment('false: belum dibayar, true: sudah dibayar');
             $table->datetime('waktu_pembayaran'); // Diubah ke datetime
             $table->decimal('total_bayar', 12, 2);
             $table->timestamps();

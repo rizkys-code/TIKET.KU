@@ -2,10 +2,10 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\JadwalController;
+// Ganti PenerbanganController dengan JadwalController jika itu yang Anda gunakan
 use App\Http\Controllers\PenerbanganController;
+use App\Http\Controllers\PemesananController;
 use Illuminate\Support\Facades\Route;
-
 
 Route::redirect('/', '/auth/login');
 
@@ -17,13 +17,20 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [RegisterController::class, 'register']);
 
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
-
 });
 
-
-
+// Grup untuk semua route yang memerlukan login
 Route::middleware('auth')->group(function () {
 
+    // Route untuk menampilkan hasil pencarian penerbangan (sudah benar)
     Route::get('/jadwal', [PenerbanganController::class, 'index'])->name('jadwal');
+
+    // === PERUBAHAN DI SINI ===
+
+    Route::get('/pemesanan/{penerbangan}', [PemesananController::class, 'show'])->name('pemesanan.show');
+
+    Route::post('/pemesanan', [PemesananController::class, 'store'])->name('pemesanan.store');
+
+    // Route::get('/pembayaran/{booking_id}', [PembayaranController::class, 'show'])->name('payment.page');
 
 });

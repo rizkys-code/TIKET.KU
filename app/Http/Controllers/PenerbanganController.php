@@ -9,17 +9,17 @@ use Carbon\Carbon;
 
 class PenerbanganController extends Controller
 {
+
     /**
      * Menampilkan dan memfilter jadwal penerbangan.
      * Method ini sekarang menangani semua logika pencarian.
      */
-    public function index(Request $request)
+    public function indexxx(Request $request)
     {
         // Query dasar, dengan eager loading untuk optimasi
         // Menggunakan model Penerbangan sesuai file Anda
         $query = Penerbangan::with(['maskapai', 'bandaraAsal', 'bandaraTujuan', 'kelas']);
 
-        // ---- Terapkan Filter dari Request ----
 
         // 1. Filter berdasarkan Kota/Bandara Asal & Tujuan
         if ($request->filled('from')) {
@@ -89,5 +89,51 @@ class PenerbanganController extends Controller
         ];
 
         return view('penerbangan.jadwal', compact('flights', 'search', 'flights_for_filter'));
+    }
+
+    public function index(Request $request)
+    {
+        $search = $request->all();
+        $query = Penerbangan::query()->with(['maskapai', 'bandaraAsal', 'bandaraTujuan', 'kelas']);
+
+        // Filter berdasarkan bandara asal
+        if (!empty($search['from'])) {
+            $query->whereHas('bandaraAsal', function ($q) use ($search) {
+                $q->where('nama_bandara', 'like', '%' . $search['from'] . '%');
+            });
+        }
+
+        // Filter berdasarkan bandara tujuan
+        if (!empty($search['to'])) {
+            $query->whereHas('bandaraTujuan', function ($q) use ($search) {
+                $q->where('nama_bandara', 'like', '%' . $search['to'] . '%');
+            });
+        }
+
+        // Filter berdasarkan tanggal
+        if (!empty($search['date'])) {
+            // Asumsi format 'Sab, 19 Agu 25' atau rentang 'Sab, 19 Agu 25 - Min, 21 Agu 25'
+            $dateRange = explode(' - ', $search['date']);
+            $startDate = Carbon::createFromFormat('D, j M y', $dateRange[0])->startOfDay();
+
+            if (isset($dateRange[1])) {
+                $endDate = Carbon::createFromFormat('D, j M y', $dateRange[1])->endOfDay();
+                $query->whereBetween('waktu_berangkat', [$startDate, $endDate]);
+            } else {
+                $query->whereDate('waktu_berangkat', $startDate);
+            }
+        }
+
+        // Data untuk dropdown filter maskapai (diambil sebelum filter maskapai diterapkan)
+        $flights_for_filter = $query->get();
+
+        // Filter berdasarkan maskapai
+        if ($request->filled('airline_filter')) {
+            $query->where('maskapai_id', $request->airline_filter);
+        }
+
+        $flights = $query->latest('waktu_berangkat')->paginate(10);
+
+        return view('penerbangan.jadwal', compact('flights', 'flights_for_filter', 'search'));
     }
 }
