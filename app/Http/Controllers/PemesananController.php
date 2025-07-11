@@ -7,6 +7,7 @@ use App\Models\Penerbangan;
 use App\Models\Pemesanan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str; // <-- TAMBAHKAN BARIS INI
 
 class PemesananController extends Controller
 {
@@ -31,6 +32,7 @@ class PemesananController extends Controller
 
     public function store(Request $request)
     {
+        // 1. Validasi tetap sama
         $validated = $request->validate([
             'penerbangan_id' => 'required|exists:penerbangan,id',
             'passengerClass' => 'required|string|in:Ekonomi,Bisnis,First Class',
@@ -44,36 +46,45 @@ class PemesananController extends Controller
         try {
             DB::beginTransaction();
 
-            $kelasPenerbangan = DB::table('kelas_penerbangan')
-                ->where('penerbangan_id', $validated['penerbangan_id'])
-                ->where('jenis_kelas', $validated['passengerClass'])
-                ->first();
+            // 2. Ambil detail kelas dan hitung total harga untuk SEMUA penumpang
+            $penerbangan = Penerbangan::with('kelas')->find($validated['penerbangan_id']);
+            $hargaPerPax = $penerbangan->kelas->firstWhere('jenis_kelas', $validated['passengerClass'])->harga ?? 0;
 
-            if (!$kelasPenerbangan) {
-                return back()->with('error', 'Kelas penerbangan tidak tersedia.');
+            if ($hargaPerPax == 0) {
+                return back()->with('error', 'Kelas penerbangan tidak tersedia atau harga belum diatur.');
             }
 
-            foreach ($validated['passengers'] as $penumpang) {
-                Pemesanan::create([
-                    'kelas_penerbangan_id' => $kelasPenerbangan->id,
-                    'user_id' => Auth::id(),
-                    'waktu_pemesanan' => now(),
-                    'status' => false,
-                    'total_harga' => $kelasPenerbangan->harga,
-                    'nama_penumpang' => $penumpang['name'],
-                    'nomor_identitas' => $penumpang['identity_number'],
-                    'tanggal_lahir' => $penumpang['date_of_birth'],
-                    'jenis_kelamin' => $penumpang['gender'],
+            $jumlahPenumpang = count($validated['passengers']);
+            $totalHarga = $hargaPerPax * $jumlahPenumpang;
+
+            // 3. Buat SATU catatan pemesanan utama
+            $pemesanan = Pemesanan::create([
+                'user_id' => Auth::id(),
+                'penerbangan_id' => $validated['penerbangan_id'],
+                'kode_booking' => 'TIKETKU-' . strtoupper(Str::random(8)), // Sekarang 'Str' sudah dikenali
+                'total_harga' => $totalHarga,
+                'status_pembayaran' => 'Belum Dibayar',
+            ]);
+            
+            // 4. Simpan setiap penumpang ke tabel terpisah
+            foreach ($validated['passengers'] as $passengerData) {
+                $pemesanan->penumpangs()->create([
+                    'nama' => $passengerData['name'],
+                    'nomor_identitas' => $passengerData['identity_number'],
+                    'tanggal_lahir' => $passengerData['date_of_birth'],
+                    'jenis_kelamin' => $passengerData['gender'],
                 ]);
             }
 
             DB::commit();
 
+            // 5. Alihkan ke halaman pembayaran dengan ID pemesanan yang baru
+            return redirect()->route('pembayaran.show', ['id_pemesanan' => $pemesanan->id])
+                        ->with('success', 'Detail pesanan berhasil disimpan. Silakan lanjutkan pembayaran.');
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan saat membuat pesanan: ' . $e->getMessage());
         }
-
-        return redirect()->route('jadwal')->with('success', 'Pemesanan berhasil dibuat! Silakan lanjutkan ke pembayaran.');
     }
 }
