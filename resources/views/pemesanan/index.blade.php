@@ -116,23 +116,25 @@
                             </div>
 
                             {{-- Input Jenis Kelamin --}}
-                            <div class="md:col-span-2">
-                                <label class="text-sm font-medium text-gray-600">Jenis Kelamin</label>
-                                <div class="flex items-center gap-8 mt-2">
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" name="passengers[{{ $index - 1 }}][gender]" value="Laki-laki" class="form-radio text-purple-600 focus:ring-purple-500" {{ old('passengers.' . ($index - 1) . '.gender') == 'Laki-laki' ? 'checked' : '' }} required>
-                                        <span class="text-gray-700">Laki-laki</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" name="passengers[{{ $index - 1 }}][gender]" value="Perempuan" class="form-radio text-purple-600 focus:ring-purple-500" {{ old('passengers.' . ($index - 1) . '.gender') == 'Perempuan' ? 'checked' : '' }} required>
-                                        <span class="text-gray-700">Perempuan</span>
-                                    </label>
-                                </div>
-                                {{-- Menampilkan pesan error validasi untuk 'gender' --}}
-                                @error('passengers.' . ($index - 1) . '.gender')
-                                    <span class="text-sm text-red-500 mt-1 d-block">{{ $message }}</span>
-                                @enderror
-                            </div>
+                           {{-- Input Jenis Kelamin --}}
+<div class="md:col-span-2">
+    <label class="text-sm font-medium text-gray-600">Jenis Kelamin</label>
+    <div class="flex items-center gap-8 mt-2">
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="passengers[{{ $index - 1 }}][gender]" value="Laki-laki" class="form-radio text-purple-600 focus:ring-purple-500" {{ old('passengers.' . ($index - 1) . '.gender') == 'Laki-laki' ? 'checked' : '' }} required>
+            <span class="text-gray-700">Laki-laki</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="passengers[{{ $index - 1 }}][gender]" value="Perempuan" class="form-radio text-purple-600 focus:ring-purple-500" {{ old('passengers.' . ($index - 1) . '.gender') == 'Perempuan' ? 'checked' : '' }} required>
+            <span class="text-gray-700">Perempuan</span>
+        </label>
+    </div>
+    {{-- Menampilkan pesan error validasi untuk 'gender' --}}
+    @error('passengers.' . ($index - 1) . '.gender')
+        {{-- DIUBAH: class 'd-block' menjadi 'block' untuk Tailwind --}}
+        <span class="text-sm text-red-500 mt-1 block">{{ $message }}</span>
+    @enderror
+</div>
                         </div>
                     </div>
                 @endforeach

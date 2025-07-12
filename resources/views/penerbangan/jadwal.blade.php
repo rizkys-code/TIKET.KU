@@ -1,3 +1,4 @@
+{{-- resources/views/penerbangan/jadwal.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Hasil Pencarian Tiket Pesawat')
@@ -7,9 +8,10 @@
         <form method="GET" action="{{ route('jadwal') }}" id="flightSearchForm">
             <div class="bg-white p-2 rounded-xl shadow-lg flex items-center text-sm text-gray-700 mb-6">
                 <div class="flex-grow flex items-center divide-x divide-gray-200">
-                    <div class="flex items-center px-4">
+                    <div class="px-4">
                         <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
                     </div>
+                    {{-- Asal & Tujuan --}}
                     <div class="w-4/12 flex items-center px-4 py-1">
                         <input type="hidden" name="from" :value="from">
                         <input type="hidden" name="to" :value="to">
@@ -19,21 +21,25 @@
                         </div>
                         <div class="flex-1 text-left"><span x-text="to" class="font-semibold whitespace-nowrap"></span></div>
                     </div>
+                    {{-- Tanggal --}}
                     <div class="w-5/12 flex items-center justify-start px-4 py-1">
-                        <div class="relative w-full">
-                            <input type="text" id="datepicker" name="date" class="w-full cursor-pointer bg-transparent border-none p-0 focus:ring-0" :value="dateText">
-                        </div>
+                        <input type="text" id="datepicker" name="date" class="w-full cursor-pointer bg-transparent border-none p-0 focus:ring-0" readonly :value="dateText" placeholder="Pilih Tanggal">
                     </div>
+                    {{-- Penumpang & Kelas --}}
                     <div class="w-3/12 flex items-center justify-start px-4 py-1">
                         <input type="hidden" name="passengers[adult]" :value="passengers.adult">
                         <input type="hidden" name="passengers[child]" :value="passengers.child">
                         <input type="hidden" name="passengers[infant]" :value="passengers.infant">
+                        <input type="hidden" name="passengerClass" :value="passengerClass">
+
                         <div class="relative" @click.away="passengerPickerOpen = false">
-                            <button type="button" @click="passengerPickerOpen = !passengerPickerOpen" class="flex items-center space-x-1 whitespace-nowrap"><span x-text="`${passengers.adult + passengers.child + passengers.infant} Penumpang, ${passengerClass}`"></span></button>
+                            <button type="button" @click="passengerPickerOpen = !passengerPickerOpen" class="flex items-center space-x-1 whitespace-nowrap">
+                                <span x-text="`${passengers.adult + passengers.child + passengers.infant} Penumpang, ${passengerClass}`"></span>
+                            </button>
                             <div x-show="passengerPickerOpen" x-transition class="absolute top-full mt-2 w-72 bg-white rounded-xl shadow-lg p-4 z-10" style="display: none;">
                                 <div class="space-y-3">
                                     <div class="flex justify-between items-center">
-                                        <div><p class="font-semibold">Dewasa</p><p class="text-xs text-gray-500">(12 tahun ke atas)</p></div>
+                                        <div><p class="font-semibold">Dewasa</p><p class="text-xs text-gray-500">(12+ thn)</p></div>
                                         <div class="flex items-center space-x-3">
                                             <button type="button" @click="passengers.adult > 1 ? passengers.adult-- : null" class="w-7 h-7 border rounded-full text-lg font-bold text-gray-500">-</button>
                                             <span x-text="passengers.adult" class="w-4 text-center"></span>
@@ -41,7 +47,7 @@
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center">
-                                        <div><p class="font-semibold">Anak</p><p class="text-xs text-gray-500">(2 - 11 tahun)</p></div>
+                                        <div><p class="font-semibold">Anak</p><p class="text-xs text-gray-500">(2 - 11 thn)</p></div>
                                         <div class="flex items-center space-x-3">
                                             <button type="button" @click="passengers.child > 0 ? passengers.child-- : null" class="w-7 h-7 border rounded-full text-lg font-bold text-gray-500">-</button>
                                             <span x-text="passengers.child" class="w-4 text-center"></span>
@@ -49,7 +55,7 @@
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center">
-                                        <div><p class="font-semibold">Bayi</p><p class="text-xs text-gray-500">(di bawah 2 tahun)</p></div>
+                                        <div><p class="font-semibold">Bayi</p><p class="text-xs text-gray-500">(< 2 thn)</p></div>
                                         <div class="flex items-center space-x-3">
                                             <button type="button" @click="passengers.infant > 0 ? passengers.infant-- : null" class="w-7 h-7 border rounded-full text-lg font-bold text-gray-500">-</button>
                                             <span x-text="passengers.infant" class="w-4 text-center"></span>
@@ -58,7 +64,7 @@
                                     </div>
                                 </div>
                                 <div class="mt-4 border-t pt-4">
-                                    <select x-model="passengerClass" name="passengerClass" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    <select x-model="passengerClass" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                         <option>Ekonomi</option><option>Bisnis</option><option>First Class</option>
                                     </select>
                                 </div>
@@ -67,10 +73,10 @@
                     </div>
                 </div>
                 <div class="pl-4 pr-3">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-10 rounded-lg transition-colors">Cari</button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-10 rounded-lg transition-colors">Ubah Cari</button>
                 </div>
             </div>
-            <input type="hidden" name="airline_filter" value="{{ request('airline_filter') }}">
+            <input type="hidden" name="airline_filter" id="airline_filter_input" value="{{ request('airline_filter') }}">
         </form>
 
         <div class="flex justify-center mb-8">
@@ -82,12 +88,11 @@
                 </button>
                 <div x-show="airlineDropdownOpen" x-transition class="absolute z-10 mt-2 w-60 left-0 right-0 mx-auto bg-white rounded-xl shadow-lg" style="display: none;">
                     <div class="p-2 space-y-1">
-                        <a href="{{ request()->fullUrlWithQuery(['airline_filter' => '']) }}" class="flex items-center p-2 rounded-lg hover:bg-gray-100"><span class="font-medium">Semua Maskapai</span></a>
-                        @php $airlines = $flights_for_filter->pluck('maskapai')->filter()->unique('id'); @endphp
-                        @foreach ($airlines as $airline)
-                            <a href="{{ request()->fullUrlWithQuery(['airline_filter' => $airline->id]) }}" class="flex items-center p-2 rounded-lg hover:bg-gray-100">
+                        <button type="button" @click="filterAirline('')" class="w-full text-left flex items-center p-2 rounded-lg hover:bg-gray-100"><span class="font-medium">Semua Maskapai</span></button>
+                        @foreach ($flights_for_filter->pluck('maskapai')->filter()->unique('id') as $airline)
+                            <button type="button" @click="filterAirline('{{ $airline->id }}')" class="w-full text-left flex items-center p-2 rounded-lg hover:bg-gray-100">
                                 <span class="font-medium">{{ $airline->nama_maskapai }}</span>
-                            </a>
+                            </button>
                         @endforeach
                     </div>
                 </div>
@@ -96,7 +101,7 @@
 
         <div class="space-y-4">
             @forelse ($flights as $flight)
-                <a href="{{ route('pemesanan.show', ['penerbangan' => $flight->id]) . '?' . http_build_query(request()->all()) }}" class="block bg-white p-5 rounded-xl shadow-md transition hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+                <a href="{{ route('pemesanan.show', ['penerbangan' => $flight->id]) . '?' . http_build_query($search) }}" class="block bg-white p-5 rounded-xl shadow-md transition hover:shadow-lg hover:-translate-y-1 cursor-pointer">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-6 w-1/3">
                             @if ($flight->maskapai)
@@ -108,7 +113,7 @@
                         </div>
                         <div class="flex items-center justify-center space-x-8 flex-grow">
                             <div class="text-center"><p class="text-xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($flight->waktu_berangkat)->format('H:i') }}</p><p class="text-sm text-gray-500">{{ $flight->bandaraAsal?->kode_bandara ?? 'N/A' }}</p></div>
-                            <div class="text-center text-gray-400"><p class="text-xs">Langsung</p><div class="w-24 h-px bg-gray-300 my-1"></div><p class="text-xs">{{ \Carbon\Carbon::parse($flight->waktu_berangkat)->diff(\Carbon\Carbon::parse($flight->waktu_tiba))->format('%hh %im') }}</p></div>
+                            <div class="text-center text-gray-400"><p class="text-xs">Langsung</p><div class="w-24 h-px bg-gray-300 my-1"></div><p class="text-xs">{{ \Carbon\Carbon::parse($flight->waktu_berangkat)->diff(\Carbon\Carbon::parse($flight->waktu_tiba))->format('%h jam %i mnt') }}</p></div>
                             <div class="text-center"><p class="text-xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($flight->waktu_tiba)->format('H:i') }}</p><p class="text-sm text-gray-500">{{ $flight->bandaraTujuan?->kode_bandara ?? 'N/A' }}</p></div>
                         </div>
                         <div class="text-right w-1/3">
@@ -137,34 +142,39 @@
         return {
             from: @json($search['from'] ?? 'Jakarta'),
             to: @json($search['to'] ?? 'Surabaya'),
-            dateText: @json($search['date'] ?? 'Pilih Tanggal'),
+            dateText: @json($search['date'] ?? ''),
             passengerClass: @json($search['passengerClass'] ?? 'Ekonomi'),
             passengers: {
-                adult: @json($search['passengers']['adult'] ?? 1),
-                child: @json($search['passengers']['child'] ?? 0),
-                infant: @json($search['passengers']['infant'] ?? 0),
+                adult: parseInt(@json($search['passengers']['adult'] ?? 1)),
+                child: parseInt(@json($search['passengers']['child'] ?? 0)),
+                infant: parseInt(@json($search['passengers']['infant'] ?? 0)),
             },
-            passengerPickerOpen: false,
-            airlineDropdownOpen: false,
-            switchCities() { [this.from, this.to] = [this.to, this.from]; },
+            
             init() {
-                const picker = new Litepicker({
+                // ================================================================
+                // KODE DEBUGGING JAVASCRIPT
+                // ================================================================
+                console.log('AlpineJS Mulai Dijalankan. Nilai awal dateText:', this.dateText);
+                // ================================================================
+
+                new Litepicker({
                     element: document.getElementById('datepicker'),
-                    singleMode: false, allowRepick: true, numberOfMonths: 2, numberOfColumns: 2,
-                    format: 'ddd, D MMM YY', lang: 'id-ID',
-                    buttonText: { previousMonth: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>`, nextMonth: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`, apply: 'Terapkan', cancel: 'Batal' },
+                    singleMode: true,
+                    minDate: new Date(),
+                    format: 'DD MMMM YYYY',
+                    lang: 'id-ID',
                     setup: (picker) => {
-                        picker.on('selected', (date1, date2) => {
-                            if (!date1) { this.dateText = 'Pilih Tanggal'; return; };
-                            const options = { weekday: 'short', day: 'numeric', month: 'short', year: '2-digit' };
-                            const formatter = new Intl.DateTimeFormat('id-ID', options);
-                            const formattedDate1 = formatter.format(date1.dateInstance).replace(/\./g, '');
-                            if (date2) {
-                                const formattedDate2 = formatter.format(date2.dateInstance).replace(/\./g, '');
-                                this.dateText = `${formattedDate1} - ${formattedDate2}`;
-                            } else { this.dateText = formattedDate1; }
+                        // Inisialisasi tanggal awal jika ada
+                        if (this.dateText) {
+                             console.log('Litepicker akan set tanggal awal ke:', this.dateText);
+                             picker.setDate(this.dateText);
+                        }
+
+                        picker.on('selected', () => {
+                            console.log('Tanggal DIPILIH. Nilai baru:', picker.getVal());
+                            this.dateText = picker.getVal();
                         });
-                    },
+                    }
                 });
             }
         }

@@ -3,137 +3,76 @@
 namespace App\Http\Controllers;
 
 use App\Models\Penerbangan;
-use App\Models\Bandara;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class PenerbanganController extends Controller
 {
-
     /**
      * Menampilkan dan memfilter jadwal penerbangan.
-     * Method ini sekarang menangani semua logika pencarian.
+     * Ini adalah method UTAMA yang dijalankan oleh rute '/jadwal'.
+     * SEMUA LOGIKA YANG SALAH SUDAH DIPERBAIKI DI SINI.
      */
-    public function indexxx(Request $request)
-    {
-        // Query dasar, dengan eager loading untuk optimasi
-        // Menggunakan model Penerbangan sesuai file Anda
-        $query = Penerbangan::with(['maskapai', 'bandaraAsal', 'bandaraTujuan', 'kelas']);
-
-
-        // 1. Filter berdasarkan Kota/Bandara Asal & Tujuan
-        if ($request->filled('from')) {
-            // Mengambil bagian pertama dari string (misal: "Jakarta" dari "Jakarta, CGK")
-            $fromCity = explode(',', $request->from)[0];
-            $fromAirportId = Bandara::where('nama_kota', 'like', '%' . $fromCity . '%')
-                ->orWhere('kode_bandara', 'like', '%' . $fromCity . '%')
-                ->value('id');
-            if ($fromAirportId) {
-                $query->where('bandara_asal_id', $fromAirportId);
-            }
-        }
-
-        if ($request->filled('to')) {
-            $toCity = explode(',', $request->to)[0];
-            $toAirportId = Bandara::where('nama_kota', 'like', '%' . $toCity . '%')
-                ->orWhere('kode_bandara', 'like', '%' . $toCity . '%')
-                ->value('id');
-            if ($toAirportId) {
-                $query->where('bandara_tujuan_id', $toAirportId);
-            }
-        }
-
-        // 2. Filter berdasarkan Tanggal Keberangkatan
-        if ($request->filled('date')) {
-            $dateParts = explode(' - ', $request->date);
-            try {
-                // Konversi tanggal dari format "Sab, 9 Agt 25" ke format Y-m-d
-                $departureDate = Carbon::createFromLocaleFormat('D, j M y', 'id', $dateParts[0])->format('Y-m-d');
-                $query->whereDate('waktu_berangkat', $departureDate);
-            } catch (\Exception $e) {
-                // Abaikan jika format tanggal tidak valid
-            }
-        }
-
-        // 3. Filter berdasarkan Ketersediaan Kelas Kabin
-        if ($request->filled('passengerClass')) {
-            $query->whereHas('kelas', function ($q) use ($request) {
-                $q->where('jenis_kelas', $request->passengerClass);
-            });
-        }
-
-        // Ambil hasil sebelum difilter maskapai untuk mengisi dropdown
-        // Ini memastikan dropdown berisi semua maskapai yang cocok dengan rute & tanggal.
-        $flights_for_filter = $query->clone()->get();
-
-
-        // 4. Filter berdasarkan Maskapai (dari dropdown)
-        if ($request->filled('airline_filter')) {
-            $query->where('maskapai_id', $request->airline_filter);
-        }
-
-        // Eksekusi query untuk mendapatkan hasil akhir yang akan ditampilkan
-        $flights = $query->orderBy('waktu_berangkat', 'asc')->get();
-
-        // Siapkan data pencarian untuk dikirim kembali ke view (mengisi ulang form)
-        $search = [
-            'from' => $request->input('from', 'Jakarta, CGK'),
-            'to' => $request->input('to', 'Singapore, SIN'),
-            'dateText' => $request->input('date', 'Pilih Tanggal'),
-            'passengerClass' => $request->input('passengerClass', 'Ekonomi'),
-            'passengers' => $request->input('passengers', [
-                'adult' => 1,
-                'child' => 0,
-                'infant' => 0
-            ]),
-        ];
-
-        return view('penerbangan.jadwal', compact('flights', 'search', 'flights_for_filter'));
-    }
-
     public function index(Request $request)
     {
+        // WAJIB: Mengatur bahasa Carbon ke Indonesia agar mengerti bulan "Juli", "Agustus", dll.
+        Carbon::setLocale('id');
+
+        // Mengambil semua parameter pencarian untuk dikirim kembali ke view
         $search = $request->all();
+
+        // Query dasar dengan eager loading untuk optimasi
         $query = Penerbangan::query()->with(['maskapai', 'bandaraAsal', 'bandaraTujuan', 'kelas']);
 
-        // Filter berdasarkan bandara asal
-        if (!empty($search['from'])) {
-            $query->whereHas('bandaraAsal', function ($q) use ($search) {
-                $q->where('nama_bandara', 'like', '%' . $search['from'] . '%');
+        // Filter berdasarkan 'from' (asal) yang lebih akurat
+        // Mencari berdasarkan nama kota ATAU nama bandara
+        if ($request->filled('from')) {
+            $query->whereHas('bandaraAsal', function ($q) use ($request) {
+                $q->where('kota', 'like', '%' . $request->from . '%')
+                  ->orWhere('nama_bandara', 'like', '%' . $request->from . '%');
             });
         }
 
-        // Filter berdasarkan bandara tujuan
-        if (!empty($search['to'])) {
-            $query->whereHas('bandaraTujuan', function ($q) use ($search) {
-                $q->where('nama_bandara', 'like', '%' . $search['to'] . '%');
+        // Filter berdasarkan 'to' (tujuan) yang lebih akurat
+        if ($request->filled('to')) {
+            $query->whereHas('bandaraTujuan', function ($q) use ($request) {
+                $q->where('kota', 'like', '%' . $request->to . '%')
+                  ->orWhere('nama_bandara', 'like', '%' . $request->to . '%');
             });
         }
 
-        // Filter berdasarkan tanggal
-        if (!empty($search['date'])) {
-            // Asumsi format 'Sab, 19 Agu 25' atau rentang 'Sab, 19 Agu 25 - Min, 21 Agu 25'
-            $dateRange = explode(' - ', $search['date']);
-            $startDate = Carbon::createFromFormat('D, j M y', $dateRange[0])->startOfDay();
-
-            if (isset($dateRange[1])) {
-                $endDate = Carbon::createFromFormat('D, j M y', $dateRange[1])->endOfDay();
-                $query->whereBetween('waktu_berangkat', [$startDate, $endDate]);
-            } else {
-                $query->whereDate('waktu_berangkat', $startDate);
+        // =========================================================================
+        // PERBAIKAN UTAMA: LOGIKA PEMBERSIH DAN FILTER TANGGAL
+        // =========================================================================
+        if ($request->filled('date')) {
+            try {
+                // Coba konversi tanggal dari format 'd F Y' (contoh: 17 Juli 2025).
+                // Jika berhasil, gunakan untuk filter.
+                $tanggal = Carbon::createFromFormat('d F Y', $request->date)->format('Y-m-d');
+                $query->whereDate('waktu_berangkat', $tanggal);
+            } catch (\Exception $e) {
+                // Jika GAGAL (karena inputnya 'aN undefined NaN' atau format lain yang aneh),
+                // kita tidak melakukan apa-apa pada query,
+                // DAN kita 'bersihkan' data yang akan dikirim kembali ke view.
+                // INI YANG MEMUTUS LINGKARAN SETAN BUG-NYA.
+                $search['date'] = '';
             }
         }
+        // =========================================================================
 
-        // Data untuk dropdown filter maskapai (diambil sebelum filter maskapai diterapkan)
-        $flights_for_filter = $query->get();
+        // Ambil data untuk dropdown filter maskapai SEBELUM paginasi
+        // Menggunakan clone() agar query utama tidak terpengaruh
+        $flights_for_filter = (clone $query)->get();
 
-        // Filter berdasarkan maskapai
+        // Filter tambahan berdasarkan maskapai jika dipilih
         if ($request->filled('airline_filter')) {
             $query->where('maskapai_id', $request->airline_filter);
         }
 
-        $flights = $query->latest('waktu_berangkat')->paginate(10);
+        // Eksekusi query akhir: urutkan dari yang paling pagi, lalu paginasi
+        $flights = $query->orderBy('waktu_berangkat', 'asc')->paginate(10);
 
+        // Kirim semua data yang dibutuhkan ke view
         return view('penerbangan.jadwal', compact('flights', 'flights_for_filter', 'search'));
     }
 }

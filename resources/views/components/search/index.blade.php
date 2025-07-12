@@ -28,21 +28,22 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div>
                     <label class="text-sm font-semibold text-gray-500">Tanggal Pergi</label>
-                    <input type="text" id="datepicker" name="date" class="w-full cursor-pointer mt-1 p-4 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-tiket-purple focus:border-tiket-purple transition" readonly>
+                    {{-- DIUBAH: Menambahkan x-ref untuk diakses oleh Alpine --}}
+                    <input type="text" id="datepicker" x-ref="datepicker" name="date" class="w-full cursor-pointer mt-1 p-4 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-tiket-purple focus:border-tiket-purple transition" readonly>
                 </div>
 
                 {{-- Penumpang --}}
                 <div class="relative">
                     <label class="text-sm font-semibold text-gray-500">Penumpang</label>
-                     <!-- Hidden inputs to submit passenger counts -->
+                     <!-- Hidden inputs untuk submit data penumpang -->
                     <input type="hidden" name="passengers[adult]" :value="passengers.adult">
                     <input type="hidden" name="passengers[child]" :value="passengers.child">
                     <input type="hidden" name="passengers[infant]" :value="passengers.infant">
                     <button type="button" @click="passengerPickerOpen = !passengerPickerOpen" class="w-full text-left mt-1 p-4 bg-white border-2 border-gray-200 rounded-xl">
+                        {{-- DIUBAH: Menambahkan hitungan bayi --}}
                         <span x-text="`${passengers.adult + passengers.child + passengers.infant} Penumpang`"></span>
                     </button>
                     <div x-show="passengerPickerOpen" @click.away="passengerPickerOpen = false" x-transition class="absolute top-full mt-2 w-full bg-white rounded-xl shadow-lg p-4 z-10" style="display: none;">
-                        {{-- Isi dropdown penumpang --}}
                         <div class="space-y-3">
                             <div class="flex justify-between items-center">
                                 <div><p class="font-semibold">Dewasa</p><p class="text-xs text-gray-500">(12+ thn)</p></div>
@@ -58,6 +59,15 @@
                                     <button type="button" @click="passengers.child > 0 ? passengers.child-- : null" class="w-8 h-8 border rounded-full text-lg font-bold text-gray-500 flex items-center justify-center">-</button>
                                     <span x-text="passengers.child" class="w-5 text-center font-semibold"></span>
                                     <button type="button" @click="passengers.child++" class="w-8 h-8 border rounded-full text-lg font-bold text-tiket-blue flex items-center justify-center">+</button>
+                                </div>
+                            </div>
+                             {{-- DITAMBAHKAN: Opsi untuk bayi --}}
+                             <div class="flex justify-between items-center">
+                                <div><p class="font-semibold">Bayi</p><p class="text-xs text-gray-500">(< 2 thn)</p></div>
+                                <div class="flex items-center space-x-3">
+                                    <button type="button" @click="passengers.infant > 0 ? passengers.infant-- : null" class="w-8 h-8 border rounded-full text-lg font-bold text-gray-500 flex items-center justify-center">-</button>
+                                    <span x-text="passengers.infant" class="w-5 text-center font-semibold"></span>
+                                    <button type="button" @click="passengers.infant++" class="w-8 h-8 border rounded-full text-lg font-bold text-tiket-blue flex items-center justify-center">+</button>
                                 </div>
                             </div>
                         </div>
@@ -96,23 +106,24 @@
             passengers: { adult: 1, child: 0, infant: 0 },
             passengerPickerOpen: false,
 
+            // DIUBAH: Logika inisialisasi datepicker diperbaiki
             init() {
+                // Set tanggal default (7 hari dari sekarang)
+                const defaultDate = new Date();
+                defaultDate.setDate(defaultDate.getDate() + 7);
+
                 const picker = new Litepicker({
-                    element: document.getElementById('datepicker'),
-                    singleMode: true, // Ubah ke true untuk satu tanggal
+                    element: this.$refs.datepicker, // Menggunakan x-ref
+                    singleMode: true,
                     allowRepick: true,
                     minDate: new Date(),
                     format: 'DD MMMM YYYY',
                     lang: 'id-ID',
                     buttonText: { apply: 'Pilih', cancel: 'Batal' },
-                    setup: (picker) => {
-                         picker.on('show', () => {
-                            let date = new Date();
-                            date.setDate(date.getDate() + 7); // Default 1 minggu dari sekarang
-                            picker.setDate(date);
-                         });
-                    }
                 });
+                
+                // Set tanggal di picker dan di input field secara langsung
+                picker.setDate(defaultDate);
             }
         }
     }
