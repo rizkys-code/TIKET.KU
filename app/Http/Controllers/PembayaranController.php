@@ -4,41 +4,50 @@ namespace App\Http\Controllers;
 
 use App\Models\Pemesanan;
 use Illuminate\Http\Request;
+// ==========================================================
+// === LANGKAH 1: Tambahkan use statement ini di atas      ===
+// ==========================================================
+use Illuminate\Support\Facades\Auth;
 
 class PembayaranController extends Controller
 {
     /**
-     * Menampilkan halaman pembayaran untuk pemesanan tertentu.
+     * Menampilkan halaman detail pembayaran.
+     * Menggunakan Route-Model Binding untuk otomatis mencari pemesanan.
      */
-    public function show($id_pemesanan)
+    public function show(Pemesanan $pemesanan)
     {
-        // Ambil data pemesanan berdasarkan ID, beserta relasi penerbangan
-        // dan relasi-relasi di dalamnya (maskapai, bandara)
-        $pemesanan = Pemesanan::with([
-            'penerbangan.maskapai',
-            'penerbangan.bandaraAsal',
-            'penerbangan.bandaraTujuan'
-        ])->findOrFail($id_pemesanan);
+        // ==========================================================
+        // === LANGKAH 2: Ganti dengan Auth::id()                 ===
+        // ==========================================================
+        // Pastikan pemesanan ini milik user yang sedang login
+        abort_if($pemesanan->user_id !== Auth::id(), 403, 'Akses Ditolak');
+        
+        // Eager load relasi yang dibutuhkan di view untuk efisiensi
+        $pemesanan->load(['penumpangs', 'penerbangan.maskapai', 'penerbangan.bandaraAsal', 'penerbangan.bandaraTujuan']);
 
-        // Tampilkan view pembayaran dan kirim data pemesanan
         return view('pembayaran.show', compact('pemesanan'));
     }
 
     /**
      * Memproses pembayaran (simulasi).
      */
-    public function processPayment($id_pemesanan)
+    public function process(Pemesanan $pemesanan)
     {
-        // Cari pemesanan berdasarkan ID
-        $pemesanan = Pemesanan::findOrFail($id_pemesanan);
+        // ==========================================================
+        // === LANGKAH 2: Ganti dengan Auth::id()                 ===
+        // ==========================================================
+        // Pastikan pemesanan ini milik user yang sedang login
+        abort_if($pemesanan->user_id !== Auth::id(), 403, 'Akses Ditolak');
 
-        // Logika untuk mengubah status pembayaran
-        // Dalam aplikasi nyata, ini akan melibatkan integrasi dengan payment gateway
-        $pemesanan->status_pembayaran = 'Lunas';
-        $pemesanan->save();
+        // Di aplikasi nyata, di sini ada logika integrasi dengan payment gateway.
+        // Untuk simulasi, kita langsung ubah statusnya.
+        $pemesanan->update([
+            'status_pembayaran' => 'Lunas'
+        ]);
 
         // Redirect kembali ke halaman pembayaran dengan pesan sukses
         return redirect()->route('pembayaran.show', $pemesanan->id)
-                ->with('success', 'Pembayaran berhasil dikonfirmasi!');
+                         ->with('success', 'Pembayaran Anda telah berhasil dikonfirmasi!');
     }
 }

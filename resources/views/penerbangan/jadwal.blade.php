@@ -5,6 +5,7 @@
 
 @section('content')
     <div class="max-w-6xl mx-auto" x-data="flightSearch()">
+        {{-- FORM PENCARIAN (Tidak ada perubahan) --}}
         <form method="GET" action="{{ route('jadwal') }}" id="flightSearchForm">
             <div class="bg-white p-2 rounded-xl shadow-lg flex items-center text-sm text-gray-700 mb-6">
                 <div class="flex-grow flex items-center divide-x divide-gray-200">
@@ -23,7 +24,7 @@
                     </div>
                     {{-- Tanggal --}}
                     <div class="w-5/12 flex items-center justify-start px-4 py-1">
-                        <input type="text" id="datepicker" name="date" class="w-full cursor-pointer bg-transparent border-none p-0 focus:ring-0" readonly :value="dateText" placeholder="Pilih Tanggal">
+                        <input type="text" id="datepicker" name="date" class="w-full cursor-pointer bg-transparent border-none p-0 focus:ring-0" readonly value="{{ request('date', '') }}" placeholder="Pilih Tanggal">
                     </div>
                     {{-- Penumpang & Kelas --}}
                     <div class="w-3/12 flex items-center justify-start px-4 py-1">
@@ -31,7 +32,6 @@
                         <input type="hidden" name="passengers[child]" :value="passengers.child">
                         <input type="hidden" name="passengers[infant]" :value="passengers.infant">
                         <input type="hidden" name="passengerClass" :value="passengerClass">
-
                         <div class="relative" @click.away="passengerPickerOpen = false">
                             <button type="button" @click="passengerPickerOpen = !passengerPickerOpen" class="flex items-center space-x-1 whitespace-nowrap">
                                 <span x-text="`${passengers.adult + passengers.child + passengers.infant} Penumpang, ${passengerClass}`"></span>
@@ -73,12 +73,17 @@
                     </div>
                 </div>
                 <div class="pl-4 pr-3">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-10 rounded-lg transition-colors">Ubah Cari</button>
+                    <button type="button" @click="submitSearch()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-10 rounded-lg transition-colors">Cari</button>
                 </div>
             </div>
             <input type="hidden" name="airline_filter" id="airline_filter_input" value="{{ request('airline_filter') }}">
         </form>
 
+        {{-- ========================================================== --}}
+        {{-- === KODE FILTER MASKAPAI YANG HILANG, DIKEMBALIKAN DI SINI === --}}
+        {{-- ========================================================== --}}
+        {{-- Hanya tampilkan filter jika ada maskapai yang bisa difilter --}}
+        @if(isset($flights_for_filter) && !$flights_for_filter->isEmpty())
         <div class="flex justify-center mb-8">
             <div @click.away="airlineDropdownOpen = false" class="relative">
                 <button @click="airlineDropdownOpen = !airlineDropdownOpen" class="bg-white border border-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full shadow-md flex items-center space-x-2 hover:bg-gray-50 transition-colors">
@@ -89,7 +94,7 @@
                 <div x-show="airlineDropdownOpen" x-transition class="absolute z-10 mt-2 w-60 left-0 right-0 mx-auto bg-white rounded-xl shadow-lg" style="display: none;">
                     <div class="p-2 space-y-1">
                         <button type="button" @click="filterAirline('')" class="w-full text-left flex items-center p-2 rounded-lg hover:bg-gray-100"><span class="font-medium">Semua Maskapai</span></button>
-                        @foreach ($flights_for_filter->pluck('maskapai')->filter()->unique('id') as $airline)
+                        @foreach ($flights_for_filter as $airline)
                             <button type="button" @click="filterAirline('{{ $airline->id }}')" class="w-full text-left flex items-center p-2 rounded-lg hover:bg-gray-100">
                                 <span class="font-medium">{{ $airline->nama_maskapai }}</span>
                             </button>
@@ -98,83 +103,112 @@
                 </div>
             </div>
         </div>
+        @endif
+        {{-- ========================================================== --}}
+
 
         <div class="space-y-4">
-            @forelse ($flights as $flight)
-                <a href="{{ route('pemesanan.show', ['penerbangan' => $flight->id]) . '?' . http_build_query($search) }}" class="block bg-white p-5 rounded-xl shadow-md transition hover:shadow-lg hover:-translate-y-1 cursor-pointer">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-6 w-1/3">
-                            @if ($flight->maskapai)
-                                <img src="{{ asset('storage/logo-maskapai/' . Str::slug($flight->maskapai->nama_maskapai) . '.png') }}" alt="{{ $flight->maskapai->nama_maskapai }} Logo" class="h-8 object-contain">
-                                <span class="font-semibold text-gray-900 text-base">{{ $flight->maskapai->nama_maskapai }}</span>
-                            @else
-                                <div class="h-8 w-8 bg-gray-200 rounded-full"></div><span class="font-semibold text-gray-500">Maskapai tidak diketahui</span>
-                            @endif
+            @if ($flights && $flights->count() > 0)
+                @foreach ($flights as $flight)
+                    <a href="{{ route('pemesanan.show', ['penerbangan' => $flight->id]) . '?' . http_build_query($search) }}" class="block bg-white p-5 rounded-xl shadow-md transition hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-6 w-1/3">
+                                @if ($flight->maskapai)
+                                    <img src="{{ asset('storage/logo-maskapai/' . Str::slug($flight->maskapai->nama_maskapai) . '.png') }}" alt="{{ $flight->maskapai->nama_maskapai }} Logo" class="h-8 object-contain">
+                                    <span class="font-semibold text-gray-900 text-base">{{ $flight->maskapai->nama_maskapai }}</span>
+                                @else
+                                    <div class="h-8 w-8 bg-gray-200 rounded-full"></div><span class="font-semibold text-gray-500">Maskapai tidak diketahui</span>
+                                @endif
+                            </div>
+                            <div class="flex items-center justify-center space-x-8 flex-grow">
+                                <div class="text-center"><p class="text-xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($flight->waktu_berangkat)->format('H:i') }}</p><p class="text-sm text-gray-500">{{ $flight->bandaraAsal?->kode_bandara ?? 'N/A' }}</p></div>
+                                <div class="text-center text-gray-400"><p class="text-xs">Langsung</p><div class="w-24 h-px bg-gray-300 my-1"></div><p class="text-xs">{{ \Carbon\Carbon::parse($flight->waktu_berangkat)->diff(\Carbon\Carbon::parse($flight->waktu_tiba))->format('%h jam %i mnt') }}</p></div>
+                                <div class="text-center"><p class="text-xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($flight->waktu_tiba)->format('H:i') }}</p><p class="text-sm text-gray-500">{{ $flight->bandaraTujuan?->kode_bandara ?? 'N/A' }}</p></div>
+                            </div>
+                            <div class="text-right w-1/3">
+                                @php
+                                    $requestedClass = $search['passengerClass'] ?? 'Ekonomi';
+                                    $harga = $flight->kelas->firstWhere('jenis_kelas', $requestedClass)?->harga ?? 0;
+                                @endphp
+                                <p class="text-xl font-bold text-red-600">IDR {{ number_format($harga, 0, ',', '.') }}</p>
+                                <p class="text-xs text-gray-500">/pax</p>
+                            </div>
                         </div>
-                        <div class="flex items-center justify-center space-x-8 flex-grow">
-                            <div class="text-center"><p class="text-xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($flight->waktu_berangkat)->format('H:i') }}</p><p class="text-sm text-gray-500">{{ $flight->bandaraAsal?->kode_bandara ?? 'N/A' }}</p></div>
-                            <div class="text-center text-gray-400"><p class="text-xs">Langsung</p><div class="w-24 h-px bg-gray-300 my-1"></div><p class="text-xs">{{ \Carbon\Carbon::parse($flight->waktu_berangkat)->diff(\Carbon\Carbon::parse($flight->waktu_tiba))->format('%h jam %i mnt') }}</p></div>
-                            <div class="text-center"><p class="text-xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($flight->waktu_tiba)->format('H:i') }}</p><p class="text-sm text-gray-500">{{ $flight->bandaraTujuan?->kode_bandara ?? 'N/A' }}</p></div>
-                        </div>
-                        <div class="text-right w-1/3">
-                            @php
-                                $requestedClass = $search['passengerClass'] ?? 'Ekonomi';
-                                $harga = $flight->kelas->firstWhere('jenis_kelas', $requestedClass)?->harga ?? 0;
-                            @endphp
-                            <p class="text-xl font-bold text-red-600">IDR {{ number_format($harga, 0, ',', '.') }}</p>
-                            <p class="text-xs text-gray-500">/pax</p>
-                        </div>
-                    </div>
-                </a>
-            @empty
-                <div class="bg-white p-8 rounded-xl shadow-md text-center text-gray-500"><p class="font-semibold text-lg">Penerbangan tidak ditemukan</p><p class="mt-2">Coba ubah kriteria pencarian atau tanggal Anda.</p></div>
-            @endforelse
+                    </a>
+                @endforeach
+            @else
+                <div class="bg-white p-8 rounded-xl shadow-md text-center text-gray-500">
+                    @if(request()->has('from'))
+                        <p class="font-semibold text-lg">Penerbangan tidak ditemukan</p>
+                        <p class="mt-2">Coba ubah kriteria pencarian atau tanggal Anda.</p>
+                    @else
+                        <p class="font-semibold text-lg">Tidak ada jadwal yang ditampilkan</p>
+                        <p class="mt-2">Silakan mulai pencarian untuk melihat jadwal penerbangan yang tersedia.</p>
+                    @endif
+                </div>
+            @endif
+            
             <div class="mt-8">
-                {{ $flights->withQueryString()->links() }}
+                @if ($flights && $flights->count() > 0)
+                    {{ $flights->withQueryString()->links() }}
+                @endif
             </div>
         </div>
     </div>
 @endsection
-
 @push('scripts')
 <script>
     function flightSearch() {
         return {
+            // Data state untuk Alpine (tidak berubah)
             from: @json($search['from'] ?? 'Jakarta'),
             to: @json($search['to'] ?? 'Surabaya'),
-            dateText: @json($search['date'] ?? ''),
             passengerClass: @json($search['passengerClass'] ?? 'Ekonomi'),
             passengers: {
                 adult: parseInt(@json($search['passengers']['adult'] ?? 1)),
                 child: parseInt(@json($search['passengers']['child'] ?? 0)),
                 infant: parseInt(@json($search['passengers']['infant'] ?? 0)),
             },
+            passengerPickerOpen: false,
+            airlineDropdownOpen: false,
+
+            // Methods
+            switchCities() {
+                let temp = this.from;
+                this.from = this.to;
+                this.to = temp;
+            },
+            
+            // ==========================================================
+            // === FUNGSI INI DIPERBARUI TOTAL UNTUK MEMPERBAIKI FILTER ===
+            // ==========================================================
+            filterAirline(airlineId) {
+                // 1. Ambil semua parameter dari URL saat ini
+                const urlParams = new URLSearchParams(window.location.search);
+
+                // 2. Set atau perbarui parameter 'airline_filter'
+                urlParams.set('airline_filter', airlineId);
+
+                // 3. Reset halaman ke 1 untuk menghindari terjebak di halaman kosong
+                urlParams.set('page', '1');
+
+                // 4. Arahkan browser ke URL baru yang sudah dimodifikasi
+                window.location.href = window.location.pathname + '?' + urlParams.toString();
+            },
+
+            // Fungsi submit ini sekarang hanya untuk tombol "Cari" utama
+            submitSearch() {
+                document.getElementById('flightSearchForm').submit();
+            },
             
             init() {
-                // ================================================================
-                // KODE DEBUGGING JAVASCRIPT
-                // ================================================================
-                console.log('AlpineJS Mulai Dijalankan. Nilai awal dateText:', this.dateText);
-                // ================================================================
-
+                // Inisialisasi Litepicker (tidak berubah)
                 new Litepicker({
                     element: document.getElementById('datepicker'),
                     singleMode: true,
                     minDate: new Date(),
                     format: 'DD MMMM YYYY',
-                    lang: 'id-ID',
-                    setup: (picker) => {
-                        // Inisialisasi tanggal awal jika ada
-                        if (this.dateText) {
-                             console.log('Litepicker akan set tanggal awal ke:', this.dateText);
-                             picker.setDate(this.dateText);
-                        }
-
-                        picker.on('selected', () => {
-                            console.log('Tanggal DIPILIH. Nilai baru:', picker.getVal());
-                            this.dateText = picker.getVal();
-                        });
-                    }
+                    lang: 'id-ID'
                 });
             }
         }

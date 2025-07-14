@@ -18,7 +18,18 @@
             @csrf
             {{-- Input tersembunyi yang dibutuhkan controller --}}
             <input type="hidden" name="penerbangan_id" value="{{ $penerbangan->id }}">
+            {{-- Kirim juga semua parameter pencarian agar bisa diteruskan ke halaman pembayaran --}}
+            @foreach ($search as $key => $value)
+                @if (is_array($value))
+                    @foreach ($value as $subKey => $subValue)
+                        <input type="hidden" name="search[{{ $key }}][{{ $subKey }}]" value="{{ $subValue }}">
+                    @endforeach
+                @else
+                    <input type="hidden" name="search[{{ $key }}]" value="{{ $value }}">
+                @endif
+            @endforeach
             <input type="hidden" name="passengerClass" value="{{ $passengerClass }}">
+
 
             {{-- Bagian Header Rute --}}
             <div class="mb-6">
@@ -77,15 +88,12 @@
                         <p class="text-lg font-bold text-gray-800 mb-4">Penumpang {{ $index }}</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                             
-                            {{-- BAGIAN 2: Perbaikan pada setiap Input --}}
-
                             {{-- Input Nama Lengkap --}}
                             <div class="md:col-span-2">
                                 <label for="name_{{ $index }}" class="text-sm font-medium text-gray-600">Nama Lengkap</label>
                                 <input type="text" id="name_{{ $index }}" name="passengers[{{ $index - 1 }}][name]" value="{{ old('passengers.' . ($index - 1) . '.name') }}"
                                     class="mt-1 w-full border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition @error('passengers.' . ($index - 1) . '.name') border-red-500 @enderror"
                                     required>
-                                {{-- Menampilkan pesan error validasi untuk 'name' --}}
                                 @error('passengers.' . ($index - 1) . '.name')
                                     <span class="text-sm text-red-500 mt-1">{{ $message }}</span>
                                 @enderror
@@ -97,7 +105,6 @@
                                 <input type="text" id="identity_{{ $index }}" name="passengers[{{ $index - 1 }}][identity_number]" value="{{ old('passengers.' . ($index - 1) . '.identity_number') }}"
                                     class="mt-1 w-full border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition @error('passengers.' . ($index - 1) . '.identity_number') border-red-500 @enderror"
                                     required>
-                                {{-- Menampilkan pesan error validasi untuk 'identity_number' --}}
                                 @error('passengers.' . ($index - 1) . '.identity_number')
                                     <span class="text-sm text-red-500 mt-1">{{ $message }}</span>
                                 @enderror
@@ -109,32 +116,28 @@
                                 <input type="date" id="dob_{{ $index }}" name="passengers[{{ $index - 1 }}][date_of_birth]" value="{{ old('passengers.' . ($index - 1) . '.date_of_birth') }}"
                                     class="mt-1 w-full border-gray-300 rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition @error('passengers.' . ($index - 1) . '.date_of_birth') border-red-500 @enderror"
                                     required>
-                                {{-- Menampilkan pesan error validasi untuk 'date_of_birth' --}}
                                 @error('passengers.' . ($index - 1) . '.date_of_birth')
                                     <span class="text-sm text-red-500 mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
 
-                            {{-- Input Jenis Kelamin --}}
                            {{-- Input Jenis Kelamin --}}
-<div class="md:col-span-2">
-    <label class="text-sm font-medium text-gray-600">Jenis Kelamin</label>
-    <div class="flex items-center gap-8 mt-2">
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="passengers[{{ $index - 1 }}][gender]" value="Laki-laki" class="form-radio text-purple-600 focus:ring-purple-500" {{ old('passengers.' . ($index - 1) . '.gender') == 'Laki-laki' ? 'checked' : '' }} required>
-            <span class="text-gray-700">Laki-laki</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="passengers[{{ $index - 1 }}][gender]" value="Perempuan" class="form-radio text-purple-600 focus:ring-purple-500" {{ old('passengers.' . ($index - 1) . '.gender') == 'Perempuan' ? 'checked' : '' }} required>
-            <span class="text-gray-700">Perempuan</span>
-        </label>
-    </div>
-    {{-- Menampilkan pesan error validasi untuk 'gender' --}}
-    @error('passengers.' . ($index - 1) . '.gender')
-        {{-- DIUBAH: class 'd-block' menjadi 'block' untuk Tailwind --}}
-        <span class="text-sm text-red-500 mt-1 block">{{ $message }}</span>
-    @enderror
-</div>
+                            <div class="md:col-span-2">
+                                <label class="text-sm font-medium text-gray-600">Jenis Kelamin</label>
+                                <div class="flex items-center gap-8 mt-2">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="passengers[{{ $index - 1 }}][gender]" value="Laki-laki" class="form-radio text-purple-600 focus:ring-purple-500" {{ old('passengers.' . ($index - 1) . '.gender') == 'Laki-laki' ? 'checked' : '' }} required>
+                                        <span class="text-gray-700">Laki-laki</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="passengers[{{ $index - 1 }}][gender]" value="Perempuan" class="form-radio text-purple-600 focus:ring-purple-500" {{ old('passengers.' . ($index - 1) . '.gender') == 'Perempuan' ? 'checked' : '' }} required>
+                                        <span class="text-gray-700">Perempuan</span>
+                                    </label>
+                                </div>
+                                @error('passengers.' . ($index - 1) . '.gender')
+                                    <span class="text-sm text-red-500 mt-1 block">{{ $message }}</span>
+                                @enderror
+                            </div>
                         </div>
                     </div>
                 @endforeach

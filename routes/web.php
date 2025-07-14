@@ -7,7 +7,13 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PenerbanganController;
 use App\Http\Controllers\PemesananController;
-use App\Http\Controllers\PembayaranController; // <-- PASTIKAN INI DI-IMPORT
+use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\RiwayatController;
+// ==========================================================
+// === LANGKAH 1: Tambahkan use statement untuk ETicketController ===
+// ==========================================================
+use App\Http\Controllers\ETicketController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -17,7 +23,7 @@ use App\Http\Controllers\PembayaranController; // <-- PASTIKAN INI DI-IMPORT
 
 Route::redirect('/', '/auth/login');
 
-// Route untuk otentikasi
+// Route untuk otentikasi (Sudah Benar)
 Route::prefix('auth')->group(function () {
     Route::get('login', [LoginController::class, 'index'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
@@ -26,24 +32,29 @@ Route::prefix('auth')->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 });
 
-// Grup untuk semua route yang memerlukan login
+
+// Route yang TIDAK memerlukan login
+// Siapa saja boleh mencari jadwal penerbangan
+Route::get('/jadwal', [PenerbanganController::class, 'index'])->name('jadwal');
+
+
+// Grup untuk semua route yang MEMERLUKAN login
 Route::middleware('auth')->group(function () {
 
-    // Route untuk menampilkan hasil pencarian penerbangan
-    Route::get('/jadwal', [PenerbanganController::class, 'index'])->name('jadwal');
-
-    // Route untuk form pemesanan
+    // Route untuk proses pemesanan
     Route::get('/pemesanan/{penerbangan}', [PemesananController::class, 'show'])->name('pemesanan.show');
     Route::post('/pemesanan', [PemesananController::class, 'store'])->name('pemesanan.store');
 
-    // ======================================================================
-    // === TAMBAHKAN BLOK INI UNTUK MEMPERBAIKI ERROR ROUTE               ===
-    // ======================================================================
-    // Route untuk menampilkan halaman pembayaran
-    Route::get('/pembayaran/{id_pemesanan}', [PembayaranController::class, 'show'])->name('pembayaran.show');
-    
-    // Route untuk memproses pembayaran (saat tombol "Bayar" diklik)
-    Route::post('/pembayaran/{id_pemesanan}/process', [PembayaranController::class, 'processPayment'])->name('pembayaran.process');
-    // ======================================================================
+    // Route untuk proses pembayaran
+    Route::get('/pembayaran/{pemesanan}', [PembayaranController::class, 'show'])->name('pembayaran.show');
+    Route::post('/pembayaran/{pemesanan}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
+
+    // Route untuk halaman riwayat
+    Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');
+
+    // ==========================================================
+    // === LANGKAH 2: Tambahkan route untuk download E-Tiket  ===
+    // ==========================================================
+    Route::get('/e-ticket/{pemesanan}/download', [ETicketController::class, 'download'])->name('eticket.download');
 
 });
