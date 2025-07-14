@@ -5,28 +5,40 @@
 
 @section('content')
     <div class="max-w-6xl mx-auto" x-data="flightSearch()">
-        {{-- FORM PENCARIAN (Tidak ada perubahan) --}}
         <form method="GET" action="{{ route('jadwal') }}" id="flightSearchForm">
             <div class="bg-white p-2 rounded-xl shadow-lg flex items-center text-sm text-gray-700 mb-6">
                 <div class="flex-grow flex items-center divide-x divide-gray-200">
                     <div class="px-4">
                         <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
                     </div>
-                    {{-- Asal & Tujuan --}}
+
+                    {{-- ========================================================== --}}
+                    {{-- === PERUBAHAN #1: Input Kota menjadi Dropdown Dinamis === --}}
+                    {{-- ========================================================== --}}
                     <div class="w-4/12 flex items-center px-4 py-1">
-                        <input type="hidden" name="from" :value="from">
-                        <input type="hidden" name="to" :value="to">
-                        <div class="flex-1 text-right"><span x-text="from" class="font-semibold whitespace-nowrap"></span></div>
+                        <select name="from" x-model="from" class="w-full font-semibold bg-transparent border-none p-0 focus:ring-0 appearance-none text-right cursor-pointer">
+                            <option value="" disabled>Pilih kota</option>
+                            @foreach($cities as $city)
+                                <option value="{{ $city->kota }}">{{ $city->kota }}</option>
+                            @endforeach
+                        </select>
                         <div class="flex-shrink-0 mx-2">
                             <button type="button" @click="switchCities()" class="p-1 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg></button>
                         </div>
-                        <div class="flex-1 text-left"><span x-text="to" class="font-semibold whitespace-nowrap"></span></div>
+                        <select name="to" x-model="to" class="w-full font-semibold bg-transparent border-none p-0 focus:ring-0 appearance-none text-left cursor-pointer">
+                            <option value="" disabled>Pilih kota</option>
+                            @foreach($cities as $city)
+                                <option value="{{ $city->kota }}">{{ $city->kota }}</option>
+                            @endforeach
+                        </select>
                     </div>
+
                     {{-- Tanggal --}}
                     <div class="w-5/12 flex items-center justify-start px-4 py-1">
                         <input type="text" id="datepicker" name="date" class="w-full cursor-pointer bg-transparent border-none p-0 focus:ring-0" readonly value="{{ request('date', '') }}" placeholder="Pilih Tanggal">
                     </div>
-                    {{-- Penumpang & Kelas --}}
+
+                    {{-- Penumpang & Kelas (KODE LENGKAP DIKEMBALIKAN) --}}
                     <div class="w-3/12 flex items-center justify-start px-4 py-1">
                         <input type="hidden" name="passengers[adult]" :value="passengers.adult">
                         <input type="hidden" name="passengers[child]" :value="passengers.child">
@@ -73,16 +85,16 @@
                     </div>
                 </div>
                 <div class="pl-4 pr-3">
-                    <button type="button" @click="submitSearch()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-10 rounded-lg transition-colors">Cari</button>
+                    {{-- ========================================================== --}}
+                    {{-- === PERUBAHAN #2: Tombol "Cari" menjadi type="submit"  === --}}
+                    {{-- ========================================================== --}}
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-10 rounded-lg transition-colors">Cari</button>
                 </div>
             </div>
             <input type="hidden" name="airline_filter" id="airline_filter_input" value="{{ request('airline_filter') }}">
         </form>
 
-        {{-- ========================================================== --}}
-        {{-- === KODE FILTER MASKAPAI YANG HILANG, DIKEMBALIKAN DI SINI === --}}
-        {{-- ========================================================== --}}
-        {{-- Hanya tampilkan filter jika ada maskapai yang bisa difilter --}}
+        {{-- Filter Maskapai --}}
         @if(isset($flights_for_filter) && !$flights_for_filter->isEmpty())
         <div class="flex justify-center mb-8">
             <div @click.away="airlineDropdownOpen = false" class="relative">
@@ -104,9 +116,8 @@
             </div>
         </div>
         @endif
-        {{-- ========================================================== --}}
 
-
+        {{-- Hasil Pencarian --}}
         <div class="space-y-4">
             @if ($flights && $flights->count() > 0)
                 @foreach ($flights as $flight)
@@ -157,10 +168,10 @@
     </div>
 @endsection
 @push('scripts')
+{{-- Fungsi submitSearch() dihapus dari sini karena tombolnya sudah type="submit" --}}
 <script>
     function flightSearch() {
         return {
-            // Data state untuk Alpine (tidak berubah)
             from: @json($search['from'] ?? 'Jakarta'),
             to: @json($search['to'] ?? 'Surabaya'),
             passengerClass: @json($search['passengerClass'] ?? 'Ekonomi'),
@@ -172,37 +183,20 @@
             passengerPickerOpen: false,
             airlineDropdownOpen: false,
 
-            // Methods
             switchCities() {
                 let temp = this.from;
                 this.from = this.to;
                 this.to = temp;
             },
             
-            // ==========================================================
-            // === FUNGSI INI DIPERBARUI TOTAL UNTUK MEMPERBAIKI FILTER ===
-            // ==========================================================
             filterAirline(airlineId) {
-                // 1. Ambil semua parameter dari URL saat ini
                 const urlParams = new URLSearchParams(window.location.search);
-
-                // 2. Set atau perbarui parameter 'airline_filter'
                 urlParams.set('airline_filter', airlineId);
-
-                // 3. Reset halaman ke 1 untuk menghindari terjebak di halaman kosong
                 urlParams.set('page', '1');
-
-                // 4. Arahkan browser ke URL baru yang sudah dimodifikasi
                 window.location.href = window.location.pathname + '?' + urlParams.toString();
-            },
-
-            // Fungsi submit ini sekarang hanya untuk tombol "Cari" utama
-            submitSearch() {
-                document.getElementById('flightSearchForm').submit();
             },
             
             init() {
-                // Inisialisasi Litepicker (tidak berubah)
                 new Litepicker({
                     element: document.getElementById('datepicker'),
                     singleMode: true,

@@ -5,23 +5,23 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>E-Tiket - {{ $pemesanan->kode_booking }}</title>
     <style>
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 12px; color: #333; }
+        body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #333; }
         .container { width: 100%; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 20px; }
         .header h1 { margin: 0; font-size: 24px; color: #8A2BE2; }
         .header p { margin: 0; font-size: 14px; }
-        .card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-        .card-header { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
-        .card-header h2 { margin: 0; font-size: 16px; }
+        .card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .card-header { border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 8px; }
+        .card-header h2 { margin: 0; font-size: 14px; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f9fa; }
+        th, td { text-align: left; padding: 6px; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; font-weight: bold; }
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
-        .status { padding: 5px 10px; border-radius: 12px; font-size: 10px; color: white; }
+        .status { padding: 4px 8px; border-radius: 12px; font-size: 10px; color: white; }
         .status-lunas { background-color: #28a745; }
         .status-belum { background-color: #dc3545; }
-        .footer { text-align: center; font-size: 10px; color: #777; margin-top: 30px; }
+        .footer { text-align: center; font-size: 9px; color: #777; margin-top: 25px; }
     </style>
 </head>
 <body>
@@ -74,7 +74,7 @@
                 </tr>
                 <tr>
                     <td>Tanggal</td>
-                    <td class="text-right">{{ \Carbon\Carbon::parse($pemesanan->penerbangan->tanggal_berangkat)->isoFormat('dddd, D MMMM YYYY') }}</td>
+                    <td class="text-right">{{ \Carbon\Carbon::parse($pemesanan->penerbangan->waktu_berangkat)->isoFormat('dddd, D MMMM YYYY') }}</td>
                 </tr>
                  <tr>
                     <td>Waktu Berangkat</td>
@@ -86,7 +86,10 @@
                 </tr>
             </table>
         </div>
-
+        
+        {{-- ========================================================== --}}
+        {{-- === PERUBAHAN DI SINI: Tabel Data Penumpang Diperbarui === --}}
+        {{-- ========================================================== --}}
         <div class="card">
             <div class="card-header">
                 <h2>Data Penumpang</h2>
@@ -96,6 +99,8 @@
                     <tr>
                         <th>No</th>
                         <th>Nama Lengkap</th>
+                        <th>Jenis Kelamin</th>
+                        <th>Tanggal Lahir</th>
                         <th class="text-right">Nomor Identitas</th>
                     </tr>
                 </thead>
@@ -104,6 +109,8 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ $penumpang->nama }}</td>
+                            <td>{{ $penumpang->jenis_kelamin }}</td>
+                            <td>{{ \Carbon\Carbon::parse($penumpang->tanggal_lahir)->isoFormat('D MMM YYYY') }}</td>
                             <td class="text-right">{{ $penumpang->nomor_identitas }}</td>
                         </tr>
                     @endforeach

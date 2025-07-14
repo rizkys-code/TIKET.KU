@@ -45,16 +45,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/pemesanan/{penerbangan}', [PemesananController::class, 'show'])->name('pemesanan.show');
     Route::post('/pemesanan', [PemesananController::class, 'store'])->name('pemesanan.store');
 
-    // Route untuk proses pembayaran
+
     Route::get('/pembayaran/{pemesanan}', [PembayaranController::class, 'show'])->name('pembayaran.show');
     Route::post('/pembayaran/{pemesanan}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
 
-    // Route untuk halaman riwayat
     Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');
 
-    // ==========================================================
-    // === LANGKAH 2: Tambahkan route untuk download E-Tiket  ===
-    // ==========================================================
+    
+    
     Route::get('/e-ticket/{pemesanan}/download', [ETicketController::class, 'download'])->name('eticket.download');
 
 });

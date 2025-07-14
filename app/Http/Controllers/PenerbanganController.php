@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Penerbangan;
-use App\Models\Maskapai; // <-- PENTING: Tambahkan 'use' statement ini
+use App\Models\Maskapai;
+use App\Models\Bandara; // <-- PENTING: Tambahkan 'use' statement untuk Bandara
 use Carbon\Carbon;
 
 class PenerbanganController extends Controller
@@ -14,6 +15,13 @@ class PenerbanganController extends Controller
      */
     public function index(Request $request)
     {
+        // ==========================================================
+        // === TAMBAHKAN INI: Ambil daftar kota unik dari database ===
+        // ==========================================================
+        // Query ini akan mengambil semua nama kota yang unik dari tabel bandara
+        // dan mengurutkannya secara alfabetis untuk dropdown.
+        $cities = Bandara::select('kota')->distinct()->orderBy('kota', 'asc')->get();
+
         // Ambil semua input pencarian untuk dikirim kembali ke view
         $search = $request->all();
         
@@ -55,10 +63,6 @@ class PenerbanganController extends Controller
             });
         }
         
-        // ==========================================================
-        // === LOGIKA FILTER MASKAPAI DIPERBARUI DI SINI          ===
-        // ==========================================================
-        
         // Ambil ID maskapai yang tersedia dari hasil query saat ini
         $available_airline_ids = $query->clone()->pluck('maskapai_id')->unique();
         
@@ -69,12 +73,14 @@ class PenerbanganController extends Controller
         if ($request->filled('airline_filter')) {
             $query->where('maskapai_id', $request->airline_filter);
         }
-        // ==========================================================
         
         // Eager load relasi untuk menghindari N+1 problem & lakukan pagination
         $flights = $query->with(['maskapai', 'bandaraAsal', 'bandaraTujuan', 'kelas'])->paginate(10);
         
-        // Mengirimkan data ke view
-        return view('penerbangan.jadwal', compact('flights', 'search', 'flights_for_filter'));
+        // ==========================================================
+        // === UBAH INI: Tambahkan 'cities' ke dalam compact()      ===
+        // ==========================================================
+        // Sekarang, variabel $cities akan tersedia di dalam view Anda.
+        return view('penerbangan.jadwal', compact('flights', 'search', 'flights_for_filter', 'cities'));
     }
 }
